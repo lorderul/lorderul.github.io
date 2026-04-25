@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
+
+body{
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  overflow:hidden;
+}
+
+/* ===== BACKGROUND ===== */
+.bg{
+  position:fixed;
+  width:100%;height:100%;
+  background:center/cover;
+  filter:blur(8px);
+  transform:scale(1.1);
+  z-index:-2;
+  transition:1s;
+}
+.overlay{
+  position:fixed;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.5);
+}
+
+/* ===== WRAP ===== */
+.wrap{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+
+/* ===== SLIDE ===== */
+.page{
+  position:absolute;
+  width:100%;
+  max-width:360px;
+  transition:0.6s cubic-bezier(0.22,1,0.36,1);
+}
+.slide-in{transform:translateX(100%)}
+.slide-active{transform:translateX(0)}
+.slide-out{transform:translateX(-100%)}
+
+/* ===== CARD ===== */
+.card{
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(12px);
+  border-radius:20px;
+  padding:20px;
+  color:white;
+  text-align:center;
+}
+
+/* ===== BOX ===== */
+.box{
+  margin-top:15px;
+  padding:15px;
+  border-radius:15px;
+  background:rgba(255,255,255,0.15);
+  text-align:left;
+  min-height:60px;
+  line-height:1.6;
+  word-wrap:break-word;
+  transition:all 0.45s cubic-bezier(0.22,1,0.36,1);
+}
+
+/* ===== BUTTON ===== */
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  margin-top:12px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.green{background:#00c853;color:white}
+.red{background:#ff1744;color:white}
+
+/* ===== PROFILE IG STYLE ===== */
+.profile-wrap{
+  position:relative;
+  width:95px;height:95px;
+  margin:auto;
+}
+
+.profile-ring{
+  position:absolute;
+  width:100%;height:100%;
+  border-radius:50%;
+  background:conic-gradient(
+    #feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#feda75
+  );
+  animation:spin 4s linear infinite;
+}
+
+.profile-wrap::before{
+  content:"";
+  position:absolute;
+  width:100%;height:100%;
+  border-radius:50%;
+  background:inherit;
+  animation:pulse 2s infinite;
+  filter:blur(8px);
+}
+
+.profile-ring::after{
+  content:"";
+  position:absolute;
+  inset:5px;
+  background:rgba(0,0,0,0.5);
+  border-radius:50%;
+}
+
+.profile-img{
+  position:absolute;
+  width:78px;height:78px;
+  border-radius:50%;
+  object-fit:cover;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  border:3px solid white;
+  z-index:2;
+}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{
+  0%{transform:scale(1);opacity:.6}
+  50%{transform:scale(1.15);opacity:.2}
+  100%{transform:scale(1);opacity:.6}
+}
+
+/* ===== TEXT ANIMATION ===== */
+.word{
+  opacity:0;
+  animation:fadeIn .4s forwards;
+}
+@keyframes fadeIn{to{opacity:1}}
+</style>
+</head>
+
+<body>
+
+<div class="bg" id="bg"></div>
+<div class="overlay"></div>
+
+<div class="wrap">
+<div id="app"></div>
+</div>
+
+<script>
+
+/* ===== CONFIG MUDAH DIGANTI ===== */
+let BG_HA = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e";
+let BG_HB = "https://images.unsplash.com/photo-1495567720989-cebdbdd97913";
+let DEFAULT_PROFILE = "";
+
+/* ===== DATA ===== */
+let nama="";
+let hold=false;
+let fotoProfile="";
+let nomor="6281234567890";
+
+/* ===== SLIDE ===== */
+function set(html){
+  const app=document.getElementById("app");
+  const old=app.querySelector(".page");
+
+  const page=document.createElement("div");
+  page.className="page slide-in";
+  page.innerHTML=`<div class="card">${html}</div>`;
+  app.appendChild(page);
+
+  setTimeout(()=>{
+    page.classList.add("slide-active");
+    if(old){
+      old.classList.add("slide-out");
+      setTimeout(()=>old.remove(),600);
+    }
+  },10);
+}
+
+/* ===== TYPING ===== */
+function typing(el,text){
+  function adjust(){
+    let box=el.closest(".box");
+    if(box){
+      box.style.height="auto";
+      box.style.height=box.scrollHeight+"px";
+    }
+  }
+
+  let words=text.split(" ");
+  let i=0;
+
+  function next(){
+    if(i<words.length){
+      if(!hold){
+        let span=document.createElement("span");
+        span.className="word";
+        span.innerText=words[i]+" ";
+        el.appendChild(span);
+
+        adjust();
+
+        let delay=180+Math.random()*120;
+        if(words[i].includes(",")) delay=400;
+        if(words[i].includes(".")) delay=700;
+
+        i++;
+        setTimeout(next,delay);
+      }else{
+        setTimeout(next,100);
+      }
+    }
+  }
+  next();
+}
+
+/* HOLD */
+document.body.onmousedown=()=>hold=true;
+document.body.onmouseup=()=>hold=false;
+
+/* ===== PROFILE ===== */
+function getProfile(){
+return fotoProfile || DEFAULT_PROFILE
+? `
+<div class="profile-wrap">
+  <div class="profile-ring"></div>
+  <img src="${fotoProfile || DEFAULT_PROFILE}" class="profile-img">
+</div>`
+: `<div class="profile-wrap"><div class="profile-ring"></div></div>`;
+}
+
+/* ===== FLOW ===== */
+function OP1(){
+document.getElementById("bg").style.background=`url(${BG_HA}) center/cover`;
+set(`
+<h2>Dokumen</h2>
+<div class="box">Sangat Rahasia</div>
+<button class="green" onclick="OP2()">Klik Disini</button>
+`);
+}
+
+function OP2(){
+set(`
+<h3>Masukkan Nama</h3>
+<input id="namaInput">
+<input type="file" accept="image/*" onchange="uploadFoto(event)">
+<button class="green" onclick="goHA1()">Konfirmasi</button>
+`);
+}
+
+function uploadFoto(e){
+let file=e.target.files[0];
+if(file) fotoProfile=URL.createObjectURL(file);
+}
+
+function goHA1(){
+nama=document.getElementById("namaInput").value;
+if(!nama)return alert("Isi dulu!");
+HA1();
+}
+
+function HA1(){
+set(`
+${getProfile()}
+<p>Hai, ${nama} ✨</p>
+<p>Ada pesan nih dari Anam</p>
+<div class="box" id="t1"></div>
+
+<button class="green" onclick="HA2()">Ya</button>
+<button class="red" onclick="HB1()">Tidak</button>
+`);
+typing(document.getElementById("t1"),"Ini pesan rahasia untuk kamu...");
+}
+
+function HA2(){
+set(`
+<div class="box" id="t2"></div>
+<button class="green" onclick="HA2_2()">Lanjut</button>
+`);
+typing(document.getElementById("t2"),"Kamu berani ya...");
+}
+
+function HA2_2(){
+set(`
+<div class="box" id="t3"></div>
+<button class="green" onclick="HA3()">Lanjut</button>
+`);
+typing(document.getElementById("t3"),"Masih lanjut... siap ke tahap berikutnya?");
+}
+
+function HA3(){
+set(`
+${getProfile()}
+<p>Hai lagi, ${nama} ✨</p>
+<p>Masih ada pesan dari Anam</p>
+<div class="box" id="t4"></div>
+
+<button class="green" onclick="THANKS()">Ya</button>
+<button class="red" onclick="HB1()">Tidak</button>
+`);
+typing(document.getElementById("t4"),"Ini tantangan terakhir...");
+}
+
+function THANKS(){
+set(`
+<h2>Terima kasih 🎉</h2>
+<button class="green" onclick="OP1()">Back To Home</button>
+`);
+}
+
+function HB1(){
+document.getElementById("bg").style.background=`url(${BG_HB}) center/cover`;
+set(`
+<div class="box">Ketik alasan kamu</div>
+<input id="alasan">
+<button class="green" onclick="kirimTidak()">Konfirmasi</button>
+`);
+}
+
+function kirimTidak(){
+let alasan=document.getElementById("alasan").value;
+let pesan="jawaban : Tidak. Alasan : "+alasan;
+window.open("https://wa.me/"+nomor+"?text="+encodeURIComponent(pesan));
+HB2();
+}
+
+function HB2(){
+set(`
+<div class="box" id="t5"></div>
+<small>tahan untuk pause</small>
+`);
+
+let el=document.getElementById("t5");
+
+typing(el,"Terima kasih sudah jujur... pesan ini akan hilang dalam beberapa detik.");
+
+setTimeout(()=>{
+set(`
+<h2>Selesai</h2>
+<button class="green" onclick="OP1()">Back To Home</button>
+`);
+},10000);
+}
+
+/* START */
+OP1();
+
+</script>
+</body>
+</html>
